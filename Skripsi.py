@@ -188,13 +188,13 @@ try:
             X_test,Y_test=inisiasiTimestepTest(dataTest,timesteps)
     
             if timesteps == 5:
-                modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps5.h5")
+                modelLSTM = tf.keras.saving.load_model("Timesteps5.h5")
             elif timesteps == 10:
-                modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps10.h5")
+                modelLSTM = tf.keras.saving.load_model("Timesteps10.h5")
             elif timesteps == 20:
-                modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps20.h5")
+                modelLSTM = tf.keras.saving.load_model("Timesteps20.h5")
             else:
-                modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps30.h5")
+                modelLSTM = tf.keras.saving.load_model("Timesteps30.h5")
 
             mse, rmse, mape, r2_value, asli, data_full, predicted = evaluate_model(modelLSTM)
             st.write("## Hasil Prediksi Data Testing")
@@ -230,7 +230,7 @@ if (selected == "Prediksi Kedepan"):
 
     if pilihDataTest:
         st.write("Anda akan menggunakan Data Test Default")
-        seriesNext = pd.read_csv(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\DataGabungan.csv", index_col='Date', parse_dates=True)
+        seriesNext = pd.read_csv("DataGabungan.csv", index_col='Date', parse_dates=True)
         SeriesClear = seriesNext[['Close','High','Open', 'Low','Nilai Tukar']]
         
     else:
@@ -306,13 +306,13 @@ if (selected == "Prediksi Kedepan"):
 
         #Load ModelLSTM
         if timestepsNext == 5:
-            modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps5.h5")
+            modelLSTM = tf.keras.saving.load_model("Timesteps5.h5")
         elif timestepsNext == 10:
-            modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps10.h5")
+            modelLSTM = tf.keras.saving.load_model("Timesteps10.h5")
         elif timestepsNext == 20:
-            modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps20.h5")
+            modelLSTM = tf.keras.saving.load_model("Timesteps20.h5")
         else:
-            modelLSTM = tf.keras.saving.load_model(r"D:\UNIVERSITAS TRUNOJOYO MADURA\SEMESTER 8\BISSMILAH SKRIPSI\PROGRESS\TOPIK FORECAST\GUI\Model\Timesteps30.h5")
+            modelLSTM = tf.keras.saving.load_model("Timesteps30.h5")
 
 
         #Prediksi Data Test
