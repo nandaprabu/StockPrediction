@@ -1,0 +1,5 @@
+matplotlib
+scikit-learn
+datetime
+tensorflow
+streamlit-option-menu
