@@ -161,11 +161,9 @@ try:
     st.write(data_scaled)
 
     st.write("## Data Splitting")
-    option = st.selectbox('Persentase Data untuk Proses Training',(70, 80, 90))
-    st.write('Persentase Data Train :', option)
-
-    dataCTrain = data_scaled[0:int(len(data_scaled)*(option/100))]
-    dataTest = data_scaled[int(len(data_scaled)*(option/100)):]
+    persentase = 80
+    dataCTrain = data_scaled[0:int(len(data_scaled)*(persentase/100))]
+    dataTest = data_scaled[int(len(data_scaled)*(persentase/100)):]
     dataTrain = dataCTrain[0:int(len(dataCTrain)*0.9)]
     dataVal = dataCTrain[int(len(dataCTrain)*0.9):]
     st.write("Total Data Train {} samples".format(len(dataTrain)))
@@ -188,20 +186,20 @@ try:
             X_test,Y_test=inisiasiTimestepTest(dataTest,timesteps)
     
             if timesteps == 5:
-                modelLSTM = tf.keras.saving.load_model("Timesteps5.h5")
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps5.h5")
             elif timesteps == 10:
-                modelLSTM = tf.keras.saving.load_model("Timesteps10.h5")
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps10.h5")
             elif timesteps == 20:
-                modelLSTM = tf.keras.saving.load_model("Timesteps20.h5")
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps20.h5")
             else:
-                modelLSTM = tf.keras.saving.load_model("Timesteps30.h5")
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps30.h5")
 
             mse, rmse, mape, r2_value, asli, data_full, predicted = evaluate_model(modelLSTM)
             st.write("## Hasil Prediksi Data Testing")
             st.write('MSE = {}'.format(mse))
-            # st.write('RMSE = {}'.format(rmse))
-            # st.write('MAPE = {}'.format(mape))
-            # st.write('R-Squared Score = {}'.format(r2_value))
+            st.write('RMSE = {}'.format(rmse))
+            st.write('MAPE = {}'.format(mape))
+            st.write('R-Squared Score = {}'.format(r2_value))
             st.pyplot(plot_dataLSTM(Y_test,predicted))
     
             prediction_copies_array = np.repeat(predicted,5, axis=-1)
@@ -226,37 +224,22 @@ if (selected == "Prediksi Kedepan"):
 
     st.write("# Prediksi Kedepan! 📈")
 
-    pilihDataTest = st.toggle("Gunakan Data Test Default")
-
-    if pilihDataTest:
-        st.write("Anda akan menggunakan Data Test Default")
-        seriesNext = pd.read_csv("DataGabungan.csv", index_col='Date', parse_dates=True)
+    uploaded_InputNext = st.file_uploader('Masukkan Data Test yang digunakan')
+    if uploaded_InputNext is not None:
+        seriesNext = pd.read_csv(uploaded_InputNext, index_col='Date', parse_dates=True)
         SeriesClear = seriesNext[['Close','High','Open', 'Low','Nilai Tukar']]
-        
-    else:
-        uploaded_InputNext = st.file_uploader('Masukkan Data Test yang digunakan')
-        if uploaded_InputNext is not None:
-            seriesNext = pd.read_csv(uploaded_InputNext, index_col='Date', parse_dates=True)
-            SeriesClear = seriesNext[['Close','High','Open', 'Low','Nilai Tukar']]
-            st.write("Jumlah `baris data` adalah", SeriesClear.shape[0])
-            st.write("Jumlah `kolom data` adalah", SeriesClear.shape[1])
-            st.table(SeriesClear.head(5))
+        st.write("Jumlah `baris data` adalah", SeriesClear.shape[0])
+        st.write("Jumlah `kolom data` adalah", SeriesClear.shape[1])
+        st.table(SeriesClear.head(5))
 
+        if all(col in seriesNext.columns for col in ['Open','High','Low','Close','Nilai Tukar']):
+            print("DataFrame memiliki semua kolom yang dibutuhkan")
         else:
-            st.info('Data Belum di Inputkan', icon="ℹ️")
-
-
-    uploaded_NextPeriod = st.file_uploader('Masukkan Data untuk Memprediksi periode Kedepan')
-    if uploaded_NextPeriod is not None:
-        df_2023 = pd.read_csv(uploaded_NextPeriod, index_col='Date', parse_dates=True)
-        series2023 = df_2023[['High','Open', 'Low','Nilai Tukar']]
-        st.write("Jumlah `baris data` adalah", series2023.shape[0])
-        st.write("Jumlah `kolom data` adalah", series2023.shape[1])
-        st.table(series2023.head(5))
+            st.error('Data harus memiliki variabel `Open`,`High`,`Low`,`Close`,`Nilai Tukar`')
 
     else:
         st.info('Data Belum di Inputkan', icon="ℹ️")
-    
+               
     timestepsNext = st.selectbox('Pilih Timesteps yang akan digunakan',(5, 10, 20, 30))
     st.write('Timesteps yang digunakan yaitu : ', timestepsNext)
 
@@ -267,100 +250,103 @@ if (selected == "Prediksi Kedepan"):
 
     MulaiPredict = st.button('Mulai Prediksi')
     if MulaiPredict:
-        series23 = series2023[:n_future]
-        gabung = pd.concat([SeriesClear, series23])
+        try:
+            dataTraining = pd.read_csv("Dataset\DataGabungan.csv", index_col='Date', parse_dates=True)
+            dataTraining = dataTraining[['Close','High','Open', 'Low','Nilai Tukar']]
+            Gabungan = pd.concat([dataTraining, SeriesClear])
 
-        #NormalisasiData
-        scalerNext = MinMaxScaler(feature_range=(0,1))
-        skalaData = scalerNext.fit_transform(gabung)
-        sizeDataAsli = len(gabung) - len(series23)
-        data_scaledNext = skalaData[:sizeDataAsli]
-
-        #Split Data
-        dataCTrainNext = data_scaledNext[0:int(len(data_scaledNext)*0.8)]
-        dataTestNext = data_scaledNext[int(len(data_scaledNext)*0.8):]
-        dataTrainNext = dataCTrainNext[0:int(len(dataCTrainNext)*0.9)]
-        dataValNext = dataCTrainNext[int(len(dataCTrainNext)*0.9):]
-
-        dataFuture = skalaData[-n_future:]
-        result = np.concatenate((dataTestNext, dataFuture))
-
-
-        #Inisialisasi Timesteps
-        def inisiasiTimestepTest(dataTest,timesteps):
-            X_testN = []
-            Y_testN = []
-             
-            for i in range(timesteps,dataTest.shape[0]):
-                X_testN.append(dataTest[i - timesteps:i, 1:dataTest.shape[1]])
-                Y_testN.append(dataTest[i][0])
-            X_testN,Y_testN = np.array(X_testN),np.array(Y_testN)
-            return X_testN, Y_testN
+            #Normalisasi Data
+            scalerNext = MinMaxScaler(feature_range=(0,1))
+            skalaData = scalerNext.fit_transform(Gabungan)
+            data_scaledNext = skalaData[-len(SeriesClear):]
         
-        Data,Y_testN=inisiasiTimestepTest(result,timestepsNext)
-        untukdatatest = len(result) - n_future
-        X_Future = Data[-n_future:]
-        X_testN = Data[:untukdatatest - timestepsNext]
-        Y_testN = Y_testN[:untukdatatest - timestepsNext]
+            #Inialisasi Timesteps
+            def inisiasiTimestepTest(dataTest,timesteps):
+                X_testN = []
+                Y_testN = []
+             
+                for i in range(timesteps,dataTest.shape[0]):
+                    X_testN.append(dataTest[i - timesteps:i, 1:dataTest.shape[1]])
+                    Y_testN.append(dataTest[i][0])
+                X_testN,Y_testN = np.array(X_testN),np.array(Y_testN)
+                return X_testN, Y_testN
+            X_testN,Y_testN=inisiasiTimestepTest(data_scaledNext,timestepsNext)
 
+        
+            #Load ModelLSTM
+            if timestepsNext == 5:
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps5.h5")
+            elif timestepsNext == 10:
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps10.h5")
+            elif timestepsNext == 20:
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps20.h5")
+            else:
+                modelLSTM = tf.keras.saving.load_model("model\Timesteps30.h5")
 
-        #Load ModelLSTM
-        if timestepsNext == 5:
-            modelLSTM = tf.keras.saving.load_model("Timesteps5.h5")
-        elif timestepsNext == 10:
-            modelLSTM = tf.keras.saving.load_model("Timesteps10.h5")
-        elif timestepsNext == 20:
-            modelLSTM = tf.keras.saving.load_model("Timesteps20.h5")
-        else:
-            modelLSTM = tf.keras.saving.load_model("Timesteps30.h5")
+            #Prediksi Data Test
+            PrediksiTest = modelLSTM.predict(X_testN)
+            mse = mean_squared_error(Y_testN, PrediksiTest)
 
+            #Prediksi Future
+            features = X_testN.shape[2]
+            predicted_values = []
+        
+            input_data = data_scaledNext[:,1:][-timestepsNext:]
+            for i in range(n_future):
+                next_period = modelLSTM.predict(input_data[-timestepsNext:].reshape(1, timestepsNext, features))
+                predicted_values.append(next_period)
+                copies = np.repeat(next_period, features, axis=1)[-features:]
+                input_data = np.append(input_data, copies, axis=0)
+            predicted_values = np.array(predicted_values)
 
-        #Prediksi Data Test
-        PrediksiTest = modelLSTM.predict(X_testN)
-        mse = mean_squared_error(Y_testN, PrediksiTest)
-        rmse = math.sqrt(mse)
-        r = r2_score(Y_testN,PrediksiTest)
-        mape = mean_absolute_percentage_error(Y_testN,PrediksiTest)
+            #Akses Tanggal untuk future
+            datelist_test = list(seriesNext.index)
+            datelist_future = pd.date_range(datelist_test[-1].date(), periods=n_future, freq='1d').tolist()
+        
+            #Denormalisasi
+            Prediction_FutureCopies = np.repeat(predicted_values,5, axis=-1)
+            PredFuture = scalerNext.inverse_transform(np.reshape(Prediction_FutureCopies,(len(predicted_values),5)))[:,0]
+            Prediction_TestCopies = np.repeat(PrediksiTest,5, axis=-1)
+            PredTest = scalerNext.inverse_transform(np.reshape(Prediction_TestCopies,(len(PrediksiTest),5)))[:,0]
 
-        #Prediksi Next period
-        FuturePrediction = modelLSTM.predict(X_Future)
+            #Rubah ke Dataframe
+            Predict_Future = pd.DataFrame(PredFuture, columns=['Next Period']).set_index(pd.Series(datelist_future))
+            Predict_Test = pd.DataFrame(PredTest, columns=['Close Predictions']).set_index(pd.Series(datelist_test[timestepsNext:]))
+            Data_Asli = pd.DataFrame(SeriesClear[-len(seriesNext) + timestepsNext:], columns=['Close']).set_index(pd.Series(datelist_test[timestepsNext:]))
 
-        #Ambil Date
-        DateTest = SeriesClear.index[-len(dataTestNext) + timestepsNext:]
-        DateNextPeriod = series2023.index[:n_future]
-          
-        #Denormalisasi
-        NextPeriodCopies = np.repeat(FuturePrediction,5, axis=-1)
-        NextPeriodDenormal = scalerNext.inverse_transform(np.reshape(NextPeriodCopies,(len(FuturePrediction),5)))[:,0]
+            #Visualisasi
+            st.write("## Hasil Prediksi Kedepan")
+            plt.plot(Data_Asli, c = 'r')
+            plt.plot(Predict_Test, c = 'y')
+            plt.plot(Predict_Future, c = 'b')
+            plt.axvline(x = max(Predict_Test.index), c = 'g', linewidth=2, linestyle='--')
+            plt.xlabel('Day')
+            plt.ylabel('Price')
+            plt.xticks(rotation=45)
+            plt.grid(True)
+            plt.title("BBCA CLOSING PRICE PREDICTION")
+            plt.legend(['Actual','Predicted','Next Period'],loc = 'lower right')
+            st.pyplot(plt.show())
 
-        TestPredCopies = np.repeat(PrediksiTest,5, axis=-1)
-        TestPredDenorm = scalerNext.inverse_transform(np.reshape(TestPredCopies,(len(PrediksiTest),5)))[:,0]
+            #Visualisasi Tabel
+            Predict_FutureNoIN = pd.DataFrame(PredFuture, columns=['Prediksi Kedepan'])
+            n_future += 1
+            periode = []
+            for i in range(1,n_future):
+                periode.append(f'ke-{i}')
+            periode = np.array(periode)
+            periode_Future = pd.DataFrame(periode, columns=['Periode'])
+            result_Future = pd.concat([periode_Future, Predict_FutureNoIN], axis=1)
+            st.table(result_Future)
 
-        Asli = SeriesClear['Close'][-len(dataTestNext) + timestepsNext:]
+            #Download Data
+            dataResult = result_Future.to_csv()
 
-        HasilFuturePredict = pd.DataFrame(NextPeriodDenormal, columns=['Next Period']).set_index(pd.Series(DateNextPeriod[:n_future]))
-        TestPrediction = pd.DataFrame(TestPredDenorm, columns=['Close Predictions']).set_index(pd.Series(DateTest))
-        DataAsli = pd.DataFrame(Asli, columns=['Close']).set_index(pd.Series(DateTest))
-
-        #Visualisasi
-        st.write("# Hasil Prediksi")
-        plt.plot(DataAsli, c = 'r')
-        plt.plot(TestPrediction, c = 'y')
-        plt.plot(HasilFuturePredict, c = 'b')
-        plt.axvline(x = max(seriesNext.index), c = 'g', linewidth=2, linestyle='--')
-        plt.xlabel('Day')
-        plt.ylabel('Price')
-        plt.xticks(rotation=45)
-        plt.grid(True)
-        plt.title("BBCA CLOSING PRICE PREDICTION")
-        plt.legend(['Actual','Predicted','Next Period'],loc = 'lower right')
-        fig = plt.show()
-        st.pyplot(fig)
-
-            # FuturePredictionDenormal = pd.DataFrame(NextPeriod_Denormal, columns=['Hasil Prediksi Kedepan'])
-            # df_NextPeriod = df_NextPeriod.reset_index()
-            # day = df_NextPeriod['Date'][0:n_future]
-            # tanggal = pd.DataFrame(day)
-            # HasilNextPeriod = pd.concat([tanggal,FuturePredictionDenormal], axis=1)
-        st.table(HasilFuturePredict)
-    
+            st.download_button(
+                label="Download data as CSV",
+                data=dataResult,
+                file_name='HasilPrediksiKedepan.csv',
+                mime='csv')
+            
+        except:
+            st.error("Proses tidak dapat dijalankan, Periksa kembali data anda!")
