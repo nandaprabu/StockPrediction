@@ -27,7 +27,7 @@ with st.sidebar:
                            icons=['person-hearts','database-fill-gear', 'clipboard-data','graph-up-arrow'], menu_icon="house", default_index=0)
 
 if (selected == "Introduction"):
-    st.write("# Hi! Selamat datang di Sistem Prediksi Stock Closing Price 👋🏼")
+    st.write("# Hi! Selamat datang di Sistem Prediksi Harga Penutupan Saham 👋🏼")
 
     st.markdown(
     """
