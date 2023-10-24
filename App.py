@@ -186,13 +186,13 @@ try:
             X_test,Y_test=inisiasiTimestepTest(dataTest,timesteps)
     
             if timesteps == 5:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps5.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps5.h5")
             elif timesteps == 10:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps10.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps10.h5")
             elif timesteps == 20:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps20.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps20.h5")
             else:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps30.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps30.h5")
 
             mse, rmse, mape, r2_value, asli, data_full, predicted = evaluate_model(modelLSTM)
             st.write("## Hasil Prediksi Data Testing")
@@ -251,7 +251,7 @@ if (selected == "Prediksi Kedepan"):
     MulaiPredict = st.button('Mulai Prediksi')
     if MulaiPredict:
         try:
-            dataTraining = pd.read_csv("Dataset\DataGabungan.csv", index_col='Date', parse_dates=True)
+            dataTraining = pd.read_csv("Dataset/DataGabungan.csv", index_col='Date', parse_dates=True)
             dataTraining = dataTraining[['Close','High','Open', 'Low','Nilai Tukar']]
             Gabungan = pd.concat([dataTraining, SeriesClear])
 
@@ -275,13 +275,13 @@ if (selected == "Prediksi Kedepan"):
         
             #Load ModelLSTM
             if timestepsNext == 5:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps5.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps5.h5")
             elif timestepsNext == 10:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps10.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps10.h5")
             elif timestepsNext == 20:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps20.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps20.h5")
             else:
-                modelLSTM = tf.keras.saving.load_model("model\Timesteps30.h5")
+                modelLSTM = tf.keras.saving.load_model("model/Timesteps30.h5")
 
             #Prediksi Data Test
             PrediksiTest = modelLSTM.predict(X_testN)
