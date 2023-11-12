@@ -27,7 +27,7 @@ with st.sidebar:
                            icons=['person-hearts','database-fill-gear', 'clipboard-data','graph-up-arrow'], menu_icon="house", default_index=0)
 
 if (selected == "Introduction"):
-    st.write("# Hi! Selamat datang di Sistem Prediksi Harga Penutupan Saham 👋🏼")
+    st.write("# Hi! Selamat datang di Sistem Prediksi Stock Closing Price 👋🏼")
 
     st.markdown(
     """
@@ -50,44 +50,57 @@ if (selected == "Data Preparation"):
             st.write("Jumlah row pada data `Saham` adalah", dataframeSaham.shape[0])
             st.write("Jumlah column pada data `Saham` adalah", dataframeSaham.shape[1])
             st.table(dataframeSaham.head(5))
-        
+            uploaded_fileSaham = True
+        else:
+            st.info('Data Belum di Inputkan', icon="ℹ️")
+    except:
+        st.error('Pastikan data anda berekstensi `.CSV`', icon="❗")
+        uploaded_fileSaham = False
+    
+    try:
         uploaded_fileKurs = st.file_uploader("Masukkan Data Nilai Tukar")
         if uploaded_fileKurs is not None:
             dataframeKurs = pd.read_csv(uploaded_fileKurs)
             st.write("Jumlah row pada data `Nilai Tukar` adalah", dataframeKurs.shape[0])
             st.write("Jumlah column pada data `Nilai Tukar` adalah", dataframeKurs.shape[1])
             st.table(dataframeKurs.head(5))
-
-    except:
-        st.info('Data Belum di Inputkan', icon="ℹ️")
-    
-    try:
-        SeriesSaham = st.multiselect(
-            "Pilih Kolom Data Saham yang akan digunakan", list(dataframeSaham.columns)
-            )
-        if not SeriesSaham:
-            st.error("Pilih salah satu Kolom data Saham yang akan digunakan.")
+            uploaded_fileKurs = True
+        
         else:
-            st.write("Kolom Data Saham yang digunakan yaitu", SeriesSaham)
-    
-        SeriesKurs = st.multiselect(
-            "Pilih Kolom Data Kurs yang akan digunakan", list(dataframeKurs.columns)
-            )
-        if not SeriesKurs:
-            st.error("Pilih salah satu Kolom data Kurs yang akan digunakan.")
-        else:
-            st.write("Kolom Data Kurs yang digunakan yaitu", SeriesKurs)
-
+            st.info('Data Belum di Inputkan', icon="ℹ️") 
     except:
-        st.info('Data Belum di Inputkan', icon="ℹ️")
-
-
-    if uploaded_fileKurs is not None:
+        st.error('Pastikan data anda berekstensi `.CSV`', icon="❗")
+        uploaded_fileKurs = False
+    
+     
+    if uploaded_fileKurs and uploaded_fileSaham is not None:
         try:
+            if uploaded_fileKurs or uploaded_fileSaham == True :
+                SeriesSaham = st.multiselect(
+                "Pilih Kolom Data Saham yang akan digunakan", list(dataframeSaham.columns))
+                if not SeriesSaham:
+                    st.error("Pilih salah satu Kolom data Saham yang akan digunakan.")
+                elif len(SeriesSaham) > 5:
+                    st.info('Hanya dapat memilih kolom `Date` dan 4 kolom lain', icon="ℹ️")
+                else:
+                    st.write("Kolom Data Saham yang digunakan yaitu", SeriesSaham)
+    
+                SeriesKurs = st.multiselect(
+                    "Pilih Kolom Data Kurs yang akan digunakan", list(dataframeKurs.columns)
+                    )
+                if not SeriesKurs:
+                    st.error("Pilih salah satu Kolom data Kurs yang akan digunakan.")
+                elif len(SeriesKurs) > 2 or 'Close' not in SeriesKurs:
+                    st.info('Hanya dapat memilih kolom `Date` dan `Close`', icon="ℹ️")
+                else:
+                    st.write("Kolom Data Kurs yang digunakan yaitu", SeriesKurs)
+            else:
+                st.error('Pastikan data anda berekstensi `.CSV`', icon="❗")
+
             gabungkan = st.button("Merger Data")
             if gabungkan:
                 if not SeriesKurs or not SeriesSaham :
-                    st.error("Pilih Kolom data terlebih dahulu")
+                    st.error("Pilih Kolom data terlebih dahulu", icon="❗")
                 else:
                     dataframeSaham = dataframeSaham[SeriesSaham]
                     dataframeKurs = dataframeKurs[SeriesKurs]
@@ -109,136 +122,144 @@ if (selected == "Data Preparation"):
                         file_name='DataGabungan.csv',
                         mime='csv',)
         except:
-            "ada yang error nich"
+            st.error('Perhatikan kembali input data anda', icon="❗")
 
 ################################################################# PROSES PENGUJIAN
 
 if (selected == "Proses Pengujian"):
     st.write("# Proses Pengujian! 📊")
-    uploaded_df = st.file_uploader("Masukkan Dataset")
-    if uploaded_df is not None:
-        dataframe = pd.read_csv(uploaded_df, index_col='Date', parse_dates=True)
-        dataframe = dataframe[['Close','High','Open', 'Low','Nilai Tukar']]
-        st.write("Jumlah `baris data` adalah", dataframe.shape[0])
-        st.write("Jumlah `kolom data` adalah", dataframe.shape[1])
-        st.table(dataframe.head(5))
+    try:
+        uploaded_df = st.file_uploader("Masukkan Dataset")
+        if uploaded_df is not None:
+            dataframe = pd.read_csv(uploaded_df, index_col='Date', parse_dates=True)
+            dataframe = dataframe[['Close','High','Open', 'Low','Nilai Tukar']]
+            st.write("Jumlah `baris data` adalah", dataframe.shape[0])
+            st.write("Jumlah `kolom data` adalah", dataframe.shape[1])
+            st.table(dataframe.head(5))
+
+        else:
+            st.info('Data Belum di Inputkan', icon="ℹ️")
     
-    else:
-        st.info('Data Belum di Inputkan', icon="ℹ️")
+    except:
+        st.error('Perhatikan kembali input data anda', icon='❗')
 
-def plot_dataLSTM(Y_test,Y_hat):
-    plt.plot(Y_test,c = 'r')
-    plt.plot(Y_hat,c = 'y')
-    plt.xlabel('Day')
-    plt.ylabel('Price')
-    plt.title("BBCA CLOSING PRICE PREDICTION")
-    plt.legend(['Actual','Predicted'],loc = 'lower right')
-    plt.show()
+    def plot_dataLSTM(Y_test,Y_hat):
+        plt.plot(Y_test,c = 'r')
+        plt.plot(Y_hat,c = 'y')
+        plt.xlabel('Day')
+        plt.ylabel('Price')
+        plt.title("BBCA CLOSING PRICE PREDICTION")
+        plt.legend(['Actual','Predicted'],loc = 'lower right')
+        plt.show()
 
-st.set_option('deprecation.showPyplotGlobalUse', False)
+    st.set_option('deprecation.showPyplotGlobalUse', False)
 
-def inisiasiTimestepTest(dataTest,timesteps):
-    X_test = []
-    Y_test = []
-    for i in range(timesteps,dataTest.shape[0]):
-        X_test.append(dataTest[i - timesteps:i, 1:dataTest.shape[1]])
-        Y_test.append(dataTest[i][0])
-    X_test,Y_test = np.array(X_test),np.array(Y_test)
-    return X_test, Y_test
+    def inisiasiTimestepTest(dataTest,timesteps):
+        X_test = []
+        Y_test = []
+        for i in range(timesteps,dataTest.shape[0]):
+            X_test.append(dataTest[i - timesteps:i, 1:dataTest.shape[1]])
+            Y_test.append(dataTest[i][0])
+        X_test,Y_test = np.array(X_test),np.array(Y_test)
+        return X_test, Y_test
 
-def evaluate_model(model):
-    Y_hat = model.predict(X_test)
-    mse = mean_squared_error(Y_test,Y_hat)
-    rmse = math.sqrt(mse)
-    mape = mean_absolute_percentage_error(Y_test, Y_hat)
-    r = r2_score(Y_test,Y_hat)
-    return mse, rmse, mape, r, Y_test, X_test, Y_hat
-
-try:
-    scaler = MinMaxScaler(feature_range=(0,1))
-    data_scaled = scaler.fit_transform(dataframe)
-    st.write("## Normalisasi Data")
-    st.write(data_scaled)
-
-    st.write("## Data Splitting")
-    persentase = 80
-    dataCTrain = data_scaled[0:int(len(data_scaled)*(persentase/100))]
-    dataTest = data_scaled[int(len(data_scaled)*(persentase/100)):]
-    dataTrain = dataCTrain[0:int(len(dataCTrain)*0.9)]
-    dataVal = dataCTrain[int(len(dataCTrain)*0.9):]
-    st.write("Total Data Train {} samples".format(len(dataTrain)))
-    st.write("Total Data Validation {} samples".format(len(dataVal)))
-    st.write("Total Data Test {} samples".format(len(dataTest)))
-
-    earlystop = EarlyStopping(monitor='val_loss', min_delta=0.0001, patience=80,  verbose=1, mode='min')
-    callbacks_list = [earlystop]
-
-    timesteps = st.selectbox('Pilih Timesteps yang akan digunakan',(5, 10, 20, 30))
-    st.write('Timesteps yang digunakan yaitu : ', timesteps)
-
-except:
-    " "    
-
-try:
-    if timesteps is not None:
-        pred = st.button("Mulai Prediksi")
-        if pred:
-            X_test,Y_test=inisiasiTimestepTest(dataTest,timesteps)
+    def evaluate_model(model):
+        Y_hat = model.predict(X_test)
+        mse = mean_squared_error(Y_test,Y_hat)
+        rmse = math.sqrt(mse)
+        mape = mean_absolute_percentage_error(Y_test, Y_hat)
+        r = r2_score(Y_test,Y_hat)
+        return mse, rmse, mape, r, Y_test, X_test, Y_hat
     
-            if timesteps == 5:
-                modelLSTM = tf.keras.saving.load_model("model/Timesteps5.h5")
-            elif timesteps == 10:
-                modelLSTM = tf.keras.saving.load_model("model/Timesteps10.h5")
-            elif timesteps == 20:
-                modelLSTM = tf.keras.saving.load_model("model/Timesteps20.h5")
+    try:
+        if all(col in dataframe.columns for col in ['Open','High','Low','Close','Nilai Tukar']):
+            scaler = MinMaxScaler(feature_range=(0,1))
+            data_scaled = scaler.fit_transform(dataframe)
+            st.write("## Normalisasi Data")
+            st.write(data_scaled)
+
+            st.write("## Data Splitting")
+            persentase = 80
+            dataCTrain = data_scaled[0:int(len(data_scaled)*(persentase/100))]
+            dataTest = data_scaled[int(len(data_scaled)*(persentase/100)):]
+            dataTrain = dataCTrain[0:int(len(dataCTrain)*0.9)]
+            dataVal = dataCTrain[int(len(dataCTrain)*0.9):]
+           
+            col1, col2, col3 = st.columns([4,5,4])
+            col1.write("Total Data Train `{}` samples".format(len(dataTrain)))
+            col2.write("Total Data Validation `{}` samples".format(len(dataVal)))
+            col3.write("Total Data Test `{}` samples".format(len(dataTest)))
+                        
+            st.write("## Inisialisasi Timesteps")
+            timesteps = st.selectbox('Pilih Timesteps yang akan digunakan',(5, 10, 20, 30))
+            st.write('Timesteps yang digunakan yaitu : ', timesteps)
+
+            if timesteps is not None:
+                pred = st.button("Mulai Prediksi")
+                if pred:
+                    X_test,Y_test=inisiasiTimestepTest(dataTest,timesteps)
+    
+                    if timesteps == 5:
+                        modelLSTM = tf.keras.saving.load_model("model/Timesteps5.h5")
+                    elif timesteps == 10:
+                        modelLSTM = tf.keras.saving.load_model("model/Timesteps10.h5")
+                    elif timesteps == 20:
+                        modelLSTM = tf.keras.saving.load_model("model/Timesteps20.h5")
+                    else:
+                        modelLSTM = tf.keras.saving.load_model("model/Timesteps30.h5")
+
+                    mse, rmse, mape, r2_value, asli, data_full, predicted = evaluate_model(modelLSTM)
+                    st.write("## Hasil Prediksi Data Testing")
+                    st.write('MSE = {}'.format(mse))
+                    # st.write('RMSE = {}'.format(rmse))
+                    # st.write('MAPE = {}'.format(mape))
+                    # st.write('R-Squared Score = {}'.format(r2_value))
+                    st.pyplot(plot_dataLSTM(Y_test,predicted))
+    
+                    prediction_copies_array = np.repeat(predicted,5, axis=-1)
+                    pred=scaler.inverse_transform(np.reshape(prediction_copies_array,(len(predicted),5)))[:,0]
+                    df_final=dataframe[predicted.shape[0]*-1:]
+                    df_final["Close Predictions"] = pred
+                    st.write("# Hasil Denormalisasi")
+                    st.table(df_final.tail(5))
+                    dataFinal = df_final.to_csv()
+                    st.download_button(
+                        label="Download data as CSV",
+                        data=dataFinal,
+                        file_name='DataGabungan.csv',
+                        mime='csv',)
             else:
-                modelLSTM = tf.keras.saving.load_model("model/Timesteps30.h5")
+                st.error('Harap pilih timesteps yang digunakan', icon="❗")
 
-            mse, rmse, mape, r2_value, asli, data_full, predicted = evaluate_model(modelLSTM)
-            st.write("## Hasil Prediksi Data Testing")
-            st.write('MSE = {}'.format(mse))
-            st.write('RMSE = {}'.format(rmse))
-            st.write('MAPE = {}'.format(mape))
-            st.write('R-Squared Score = {}'.format(r2_value))
-            st.pyplot(plot_dataLSTM(Y_test,predicted))
+        else:
+            st.error('Dataset Harus memiliki kolom `Date`, `Close`, `Open`, `Low`, `High` dan `Nilai Tukar`', icon="❗")
     
-            prediction_copies_array = np.repeat(predicted,5, axis=-1)
-            pred=scaler.inverse_transform(np.reshape(prediction_copies_array,(len(predicted),5)))[:,0]
-            df_final=dataframe[predicted.shape[0]*-1:]
-            df_final["Close Predictions"] = pred
-            st.write("# Hasil Denormalisasi")
-            st.table(df_final.tail(5))
-            dataFinal = df_final.to_csv()
-            st.download_button(
-                label="Download data as CSV",
-                data=dataFinal,
-                file_name='DataGabungan.csv',
-                mime='csv',)
-
-except:
-    " "
-
+    except:
+        " "    
+            
+    
 ################################################### PREDIKSI KEDEPAN
 
 if (selected == "Prediksi Kedepan"):
 
     st.write("# Prediksi Kedepan! 📈")
-
-    uploaded_InputNext = st.file_uploader('Masukkan Data Test yang digunakan')
-    if uploaded_InputNext is not None:
-        seriesNext = pd.read_csv(uploaded_InputNext, index_col='Date', parse_dates=True)
-        SeriesClear = seriesNext[['Close','High','Open', 'Low','Nilai Tukar']]
-        st.write("Jumlah `baris data` adalah", SeriesClear.shape[0])
-        st.write("Jumlah `kolom data` adalah", SeriesClear.shape[1])
-        st.table(SeriesClear.head(5))
-
-        if all(col in seriesNext.columns for col in ['Open','High','Low','Close','Nilai Tukar']):
-            print("DataFrame memiliki semua kolom yang dibutuhkan")
+    try:
+        uploaded_InputNext = st.file_uploader('Masukkan Data Test yang digunakan')
+        if uploaded_InputNext is not None:
+            seriesNext = pd.read_csv(uploaded_InputNext, index_col='Date', parse_dates=True)
+            if all(col in seriesNext.columns for col in ['Open','High','Low','Close','Nilai Tukar']):
+                SeriesClear = seriesNext[['Close','High','Open', 'Low','Nilai Tukar']]
+                st.write("Jumlah `baris data` adalah", SeriesClear.shape[0])
+                st.write("Jumlah `kolom data` adalah", SeriesClear.shape[1])
+                st.table(SeriesClear.head(5))
+            
+            else:
+                st.error('Dataset Harus memiliki kolom `Date`, `Close`, `Open`, `Low`, `High` dan `Nilai Tukar`', icon="❗")
+         
         else:
-            st.error('Data harus memiliki variabel `Open`,`High`,`Low`,`Close`,`Nilai Tukar`')
-
-    else:
-        st.info('Data Belum di Inputkan', icon="ℹ️")
+            st.info('Data Belum di Inputkan', icon="ℹ️")
+    except:
+        st.error('Perhatikan kembali input data anda', icon='❗')
                
     timestepsNext = st.selectbox('Pilih Timesteps yang akan digunakan',(5, 10, 20, 30))
     st.write('Timesteps yang digunakan yaitu : ', timestepsNext)
@@ -285,7 +306,7 @@ if (selected == "Prediksi Kedepan"):
 
             #Prediksi Data Test
             PrediksiTest = modelLSTM.predict(X_testN)
-            mse = mean_squared_error(Y_testN, PrediksiTest)
+            mseNext = mean_squared_error(Y_testN, PrediksiTest)
 
             #Prediksi Future
             features = X_testN.shape[2]
@@ -316,6 +337,7 @@ if (selected == "Prediksi Kedepan"):
 
             #Visualisasi
             st.write("## Hasil Prediksi Kedepan")
+            st.write("Nilai Mean Squared Error `{}`".format(mseNext))           
             plt.plot(Data_Asli, c = 'r')
             plt.plot(Predict_Test, c = 'y')
             plt.plot(Predict_Future, c = 'b')
