@@ -226,7 +226,7 @@ if (selected == "Proses Pengujian"):
                     st.download_button(
                         label="Download data as CSV",
                         data=dataFinal,
-                        file_name='DataGabungan.csv',
+                        file_name='HasilPengujian.csv',
                         mime='csv',)
             else:
                 st.error('Harap pilih timesteps yang digunakan', icon="❗")
