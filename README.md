@@ -28,7 +28,7 @@ Here are the required libraries:
 ## Usage
 ### 1. Clone this repository
 ### 2. Prepare the dataset.
-Download the stock price dataset and save it in the `Dataset` folder. Or you can download the data from [stock data](https://finance.yahoo.com/quote/BBCA.JK/history?period1=1356998400&period2=1672531200&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true) and [exchange rate data](https://finance.yahoo.com/quote/IDR%3DX/history/?period1=1325376000&period2=1327968000&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true) sites.
+Download the stock price dataset and save it in the [Dataset](Dataset) folder. Or you can download the data from [stock data](https://finance.yahoo.com/quote/BBCA.JK/history?period1=1356998400&period2=1672531200&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true) and [exchange rate data](https://finance.yahoo.com/quote/IDR%3DX/history/?period1=1325376000&period2=1327968000&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true) sites.
 ### 3. Run the App script on your terminal.
 ```sh
 Streamlit run App.py
@@ -37,5 +37,5 @@ Streamlit run App.py
 ## Model
 The model used in this project is LSTM, implemented using TensorFlow. This model is trained with historical stock price data to predict future closing prices. In this project, there are 4 best models produced by each timestep in the training process. You can access them in [here](model).
 
-## Hasil
+## Result
 The prediction results will be visualized in the form of a graph, showing the comparison between the actual prices and the prices predicted by the model. The best result in this research is with an MSE value of 0.000323329.
