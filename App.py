@@ -18,7 +18,7 @@ from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
 
 st.set_page_config(
-    page_title="Skripsi Angga",
+    page_title="Prediksi Saham",
     page_icon=":bar_chart:"
 )
 
